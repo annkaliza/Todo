@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<meta http-equiv="X-UA-Compatible" content="ie=edge" />
+		<title>Todo</title>
+	</head>
+	<body>
+		<h1>Things Todo</h1>
+		<div>
+			<input type="text" id="tdName" />
+			<button id="tdAdd">Add Task</button>
+		</div>
+		<div id="tasklist"></div>
+		<script type="application/javascript">
+			const elTasks = document.getElementById("tasklist");
+			let getTodos = async () => {
+				elTasks.innerHTML = "";
+				const itemsRaw = await fetch("https://localhost:5001/api/todo", {
+					// mode: "no-cors",
+					cache: "no-cache",
+					method: "GET"
+				});
+				const items = await itemsRaw.json();
+				items.forEach(todoItem => {
+					const eltodoItem = document.createElement("div");
+					eltodoItem.id = todoItem.id;
+
+					eltodoItem.innerHTML =
+						'<input class="tdicheck" type = "checkbox" name="isComplete" ' +
+						(todoItem.isComplete ? "checked" : "") +
+						' value="isComplete"/>' +
+						`<span>${todoItem.name}</span>`;
+					elTasks.appendChild(eltodoItem);
+				});
+
+				let elsChecks = document.querySelectorAll(".tdicheck");
+
+				elsChecks.forEach(el => {
+					el.addEventListener("click", async e => {
+						console.log(el, el.parentElement.id);
+
+						const itemsRaw = await fetch(
+							"https://localhost:5001/api/todo/" + el.parentElement.id,
+							{
+								// cache: "no-cache",
+								method: "PATCH",
+								headers: {
+									Accept: "Application/json",
+									"Content-Type": "Application/json"
+								},
+								body: JSON.stringify({
+									id: el.parentElement.id,
+									isComplete: el.checked
+								})
+							}
+						);
+					});
+				});
+				console.log(items);
+			};
+
+			getTodos();
+			// fetch("https://localhost:5001/api/todo", {
+			// 	// mode: "no-cors",
+			// 	cache: "no-cache"
+			// })
+			// 	.then(Response => Response.json())
+			// 	.then(data => {
+			// 		console.log(data);
+			// 	});
+			// .catch(error => console.log(error));
+
+			const addBtn = document.getElementById("tdAdd");
+			addBtn.addEventListener("click", async () => {
+				const tdText = document.getElementById("tdName");
+				console.log(tdText.value);
+
+				let data = { name: tdText.value, isComplete: false };
+				const itemsRaw = await fetch("https://localhost:5001/api/todo", {
+					// mode: "no-cors",
+					cache: "no-cache",
+					method: "GET"
+				});
+				const items = await itemsRaw.json();
+				items.forEach(todoItem => {
+					const eltodoItem = document.createElement("div");
+					eltodoItem.id = todoItem.id;
+
+					eltodoItem.innerHTML =
+						'<input class="tdicheck" type = "checkbox" name="isComplete" ' +
+						(todoItem.isComplete ? "checked" : "") +
+						' value="isComplete"/>' +
+						`<span>${todoItem.name}</span>`;
+					elTasks.appendChild(eltodoItem);
+				});
+
+				let elsChecks = document.querySelectorAll(".tdicheck");
+
+				elsChecks.forEach(el => {
+					el.addEventListener("click", async e => {
+						console.log(el, el.parentElement.id);
+
+						await fetch("https://localhost:5001/api/todo", {
+							// cache: "no-cache",
+							method: "POST",
+							headers: {
+								Accept: "Application/json",
+								"Content-Type": "Application/json"
+							},
+							body: JSON.stringify(data)
+						});
+						getTodos();
+					});
+				});
+			});
+		</script>
+	</body>
+</html>
